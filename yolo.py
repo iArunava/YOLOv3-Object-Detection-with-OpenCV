@@ -13,6 +13,17 @@ if __name__ == '__main__':
 		help='The directory where the model weights and \
 			  configuration files are.')
 
+	parser.add_argument('-w', '--weights',
+		type=str,
+		default='./yolov3-coco/yolov3.weights',
+		help='Path to the file which contains the weights \
+			 	for YOLOv3.')
+
+	parser.add_argument('-cfg', '--config',
+		type=str,
+		default='./yolov3-coco/yolov3.cfg',
+		help='Path to the configuration file for the YOLOv3 model.')
+
 	parser.add_argument('-i', '--image-path',
 		type=str,
 		help='The path to the image file')
@@ -54,3 +65,21 @@ if __name__ == '__main__':
 	# Intializing colors to represent each label uniquely
 	colors = np.random.randint(0, 255, size=(len(labels), 3), dtype='uint8')
 
+	# Load the weights and configutation to form the pretrained YOLOv3 model
+	net = cv.dnn.readNetFromDarknet(FLAGS.config, FLAGS.weights)
+
+	# Get the output layer names of the model
+	layer_names = net.getLayerNames()
+	layer_names = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+
+	# Do inference with given image
+	if not FLAGS.image_path == None:
+		# Read the image
+		try:
+			img = cv.imread(FLAGS.image_path)
+		except:
+			raise 'Image cannot be loaded!\n\
+				   Please check the path provided!'
+
+	else:
+		pass
