@@ -122,25 +122,25 @@ if __name__ == '__main__':
 
 		finally:
 			while True:
-			    grabbed, frame = vid.read()
+				grabbed, frame = vid.read()
 
 			    # Checking if the complete video is read
-			    if not grabbed:
-			        break
+				if not grabbed:
+					break
 
-			    if W is None or H is None:
-			        height, width = frame.shape[:2]
+				if width is None or height is None:
+					height, width = frame.shape[:2]
 
-		    	frame = infer_image(net, layer_names, height, width, frame, colors, labels, FLAGS)
+				frame, _, _, _, _ = infer_image(net, layer_names, height, width, frame, colors, labels, FLAGS)
 
-			    if writer is None:
-			        # Initialize the video writer
-			        fourcc = cv.VideoWriter_fourcc("MJPG")
-			        writer = cv.VideoWriter(FLAGS.video_output_path, fourcc, 30, 
-			                        (frame.shape[1], frame.shape[0]), True)
+				if writer is None:
+					# Initialize the video writer
+					fourcc = cv.VideoWriter_fourcc(*"MJPG")
+					writer = cv.VideoWriter(FLAGS.video_output_path, fourcc, 30, 
+						            (frame.shape[1], frame.shape[0]), True)
 
 
-			        writer.write(frame)
+				writer.write(frame)
 
 			print ("[INFO] Cleaning up...")
 			writer.release()
@@ -148,24 +148,26 @@ if __name__ == '__main__':
 
 
 	else:
-	    # Infer real-time on webcam
-	    count = 5
-	    prev_frame = None
+		# Infer real-time on webcam
+		count = 0
 
-	    vid = cv.VideoCapture(0)
-	    while True:
-	    	_, frame = vid.read()
-	    	height, width = frame.shape[:2]
+		vid = cv.VideoCapture(0)
+		while True:
+			_, frame = vid.read()
+			height, width = frame.shape[:2]
 
-	    	if count == 5:
-		    	frame = infer_image(net, layer_names, height, width, frame, colors, labels, FLAGS)
-		    	count = 0
-		    	prev_frame = frame
-	    	count = (count - 1) % 6
+			if count == 0:
+				frame, boxes, confidences, classids, idxs = infer_image(net, layer_names, \
+		    						height, width, frame, colors, labels, FLAGS)
+				count += 1
+			else:
+				frame, boxes, confidences, classids, idxs = infer_image(net, layer_names, \
+		    						height, width, frame, colors, labels, FLAGS, boxes, confidences, classids, idxs, infer=False)
+				count = (count + 1) % 6
 
-	    	cv.imshow('webcam', prev_frame)
+			cv.imshow('webcam', frame)
 
-	    	if cv.waitKey(1) & 0xFF == ord('q'):
-	    		break
-	    vid.release()
-	    cv.destroyAllWindows()
+			if cv.waitKey(1) & 0xFF == ord('q'):
+				break
+		vid.release()
+		cv.destroyAllWindows()

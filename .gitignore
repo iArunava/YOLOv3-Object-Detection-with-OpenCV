@@ -2,3 +2,4 @@
 *.swp
 images/
 __pycache__/
+*.avi
