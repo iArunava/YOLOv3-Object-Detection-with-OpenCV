@@ -4,7 +4,7 @@ import cv2 as cv
 import subprocess
 import time
 import os
-import yolo_utils
+from yolo_utils import infer_image, show_image
 
 FLAGS = []
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
 	parser.add_argument('-vo', '--video-output-path',
 		type=str,
-                default='./output.avi'
+        default='./output.avi',
 		help='The path of the output video file')
 
 	parser.add_argument('-l', '--labels',
@@ -55,7 +55,7 @@ if __name__ == '__main__':
 				probabiity less than the confidence value. \
 				default: 0.5')
 
-	parser.add_argument('-t', '--threshold',
+	parser.add_argument('-th', '--threshold',
 		type=float,
 		default=0.3,
 		help='The threshold to use when applying the \
@@ -67,10 +67,10 @@ if __name__ == '__main__':
 		help='Set to True, if the model weights and configurations \
 				are not present on your local machine.')
 
-        parser.add_argument('-t', '--show-time',
-                type=bool,
-                default=False,
-                help='Show the time taken to infer each image.')
+	parser.add_argument('-t', '--show-time',
+		type=bool,
+		default=False,
+		help='Show the time taken to infer each image.')
 
 	FLAGS, unparsed = parser.parse_known_args()
 
@@ -89,63 +89,63 @@ if __name__ == '__main__':
 
 	# Get the output layer names of the model
 	layer_names = net.getLayerNames()
-	layer_names = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+	layer_names = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
         
-        # If both image and video files are given then raise error
-        if FLAGS.image_path and FLAGS.video_path:
-            raise 'Kidnly provide one, either path to an image or path to video'
+	# If both image and video files are given then raise error
+	if FLAGS.image_path is None and FLAGS.video_path is None:
+	    raise 'Kidnly provide one, either path to an image or path to video'
 
 	# Do inference with given image
 	if FLAGS.image_path:
 		# Read the image
 		try:
 			img = cv.imread(FLAGS.image_path)
-                        height, width = img.shape[:2]
+			height, width = img.shape[:2]
 		except:
 			raise 'Image cannot be loaded!\n\
                                Please check the path provided!'
 
-                finally:
-                        img = infer_image(img)
-                        show_img(img)
+		finally:
+			img = infer_image(net, layer_names, height, width, img, colors, labels, FLAGS)
+			show_image(img)
 
-	else if FLAGS.video_path:
+	elif FLAGS.video_path:
 		# Read the video
 		try:
 			vid = cv.VideoCapture(FLAGS.video_path)
-                        height, width = None, None
-                        writer = None
+			height, width = None, None
+			writer = None
 		except:
 			raise 'Video cannot be loaded!\n\
                                Please check the path provided!'
 
-                finally:
-                    while True:
-                        grabbed, frame = vid.read()
+		finally:
+			while True:
+			    grabbed, frame = vid.read()
 
-                        # Checking if the complete video is read
-                        if not grabbed:
-                            break
+			    # Checking if the complete video is read
+			    if not grabbed:
+			        break
 
-                        if W is None, or H is None:
-                            height, width = frame.shape[:2]
+			    if W is None or H is None:
+			        height, width = frame.shape[:2]
 
-                        frame = infer_img(frame)
+			    frame = infer_img(frame)
 
-                        if writer is None:
-                            # Initialize the video writer
-                            fourcc = cv.VideoWriter_fourcc("MJPG")
-                            writer = cv.VideoWriter(FLAGS.video_output_path, fourcc, 30, 
-                                            (frame.shape[1], frame.shape[0]), True)
-
-
-                        writer.write(frame)
-
-                print ("[INFO] Cleaning up...")
-                writer.release()
-                vid.release()
+			    if writer is None:
+			        # Initialize the video writer
+			        fourcc = cv.VideoWriter_fourcc("MJPG")
+			        writer = cv.VideoWriter(FLAGS.video_output_path, fourcc, 30, 
+			                        (frame.shape[1], frame.shape[0]), True)
 
 
-            else:
-                # Infer real-time on webcam
-                pass
+			        writer.write(frame)
+
+			print ("[INFO] Cleaning up...")
+			writer.release()
+			vid.release()
+
+
+	else:
+	    # Infer real-time on webcam
+	    pass

@@ -18,7 +18,7 @@ def draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, label
             w, h = boxes[i][2], boxes[i][3]
             
             # Get the unique color for this class
-            color = [int(c) for c in COLORS[classids[i]]]
+            color = [int(c) for c in colors[classids[i]]]
 
             # Draw the bounding box rectangle and label on the image
             cv.rectangle(img, (x, y), (x+w, y+h), color, 2)
@@ -60,7 +60,7 @@ def generate_boxes_confidences_classids(outs, height, width, tconf):
 
     return boxes, confidences, classids
 
-def infer_image(img):
+def infer_image(net, layer_names, height, width, img, colors, labels, FLAGS):
     # Contructing a blob from the input image
     blob = cv.dnn.blobFromImage(img, 1 / 255.0, (416, 416), 
                     swapRB=True, crop=False)
@@ -81,9 +81,9 @@ def infer_image(img):
     boxes, confidences, classids = generate_boxes_confidences_classids(outs, height, width, FLAGS.confidence)
     
     # Apply Non-Maxima Suppression to suppress overlapping bounding boxes
-    idxs = cv.dnn.NMSBoxes(boxes, confidence, FLAGS.confidence, FLAGS.threshold)
+    idxs = cv.dnn.NMSBoxes(boxes, confidences, FLAGS.confidence, FLAGS.threshold)
 
     # Draw labels and boxes on the image
-    img = draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors)
+    img = draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels)
 
     return img
