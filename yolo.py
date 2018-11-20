@@ -93,7 +93,8 @@ if __name__ == '__main__':
         
 	# If both image and video files are given then raise error
 	if FLAGS.image_path is None and FLAGS.video_path is None:
-	    raise 'Kidnly provide one, either path to an image or path to video'
+	    print ('Neither path to an image or path to video provided')
+	    print ('Starting Inference on Webcam')
 
 	# Do inference with given image
 	if FLAGS.image_path:
@@ -130,7 +131,7 @@ if __name__ == '__main__':
 			    if W is None or H is None:
 			        height, width = frame.shape[:2]
 
-			    frame = infer_img(frame)
+		    	frame = infer_image(net, layer_names, height, width, frame, colors, labels, FLAGS)
 
 			    if writer is None:
 			        # Initialize the video writer
@@ -148,4 +149,23 @@ if __name__ == '__main__':
 
 	else:
 	    # Infer real-time on webcam
-	    pass
+	    count = 5
+	    prev_frame = None
+
+	    vid = cv.VideoCapture(0)
+	    while True:
+	    	_, frame = vid.read()
+	    	height, width = frame.shape[:2]
+
+	    	if count == 5:
+		    	frame = infer_image(net, layer_names, height, width, frame, colors, labels, FLAGS)
+		    	count = 0
+		    	prev_frame = frame
+	    	count = (count - 1) % 6
+
+	    	cv.imshow('webcam', prev_frame)
+
+	    	if cv.waitKey(1) & 0xFF == ord('q'):
+	    		break
+	    vid.release()
+	    cv.destroyAllWindows()
