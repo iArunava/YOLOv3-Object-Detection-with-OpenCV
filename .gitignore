@@ -1,3 +1,4 @@
 *.weights
 *.swp
 images/
+__pycache__/
