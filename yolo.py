@@ -4,65 +4,9 @@ import cv2 as cv
 import subprocess
 import time
 import os
+import yolo_utils
 
 FLAGS = []
-
-def show_image(img):
-    cv.imshow("Image", img)
-    cv.waitKey(0)
-
-def draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels):
-    # If there are any detections
-    if len(idxs) > 0:
-        for i in idxs.flatten():
-            # Get the bounding box coordinates
-            x, y = boxes[i][0], boxes[i][1]
-            w, h = boxes[i][2], boxes[i][3]
-            
-            # Get the unique color for this class
-            color = [int(c) for c in COLORS[classids[i]]]
-
-            # Draw the bounding box rectangle and label on the image
-            cv.rectangle(img, (x, y), (x+w, y+h), color, 2)
-            text = "{}: {:4f}".format(labels[classids[i]], confidences[i])
-            cv.putText(img, text, (x, y-5), cv.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-    return img
-
-
-
-def generate_boxes_confidences_classids(outs, height, width):
-    boxes = []
-    confidences = []
-    classids = []
-
-    for out in outs:
-        for detection in out:
-            print (detection)
-            
-            # Get the scores, classid, and the confidence of the prediction
-            scores = detection[:5]
-            classid = np.argmax(scores)
-            confidence = scores[classid]
-            
-            # Consider only the predictions that are above a certain confidence level
-            if confidence > FLAGS.confidence:
-                # TODO Check detection
-                box = detection[0:4] * np.array([height, width, height, width])
-                (centerX, centerY, bwidth, bheight) = box.astype('int')
-
-                # Using the center x, y coordinates to derive the top
-                # and the left corner of the bounding box
-                x = int(centerX - (bwidth / 2))
-                y = int(centerY - (bheight / 2))
-
-                # Append to list
-                boxes.append([x, y, int(width), int(height)])
-                confidences.append(float(confidence))
-                classids.append(classid)
-
-    return boxes, confidences, classids
-                
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
@@ -87,6 +31,16 @@ if __name__ == '__main__':
 	parser.add_argument('-i', '--image-path',
 		type=str,
 		help='The path to the image file')
+
+	parser.add_argument('-v', '--video-path',
+		type=str,
+		help='The path to the video file')
+
+
+	parser.add_argument('-vo', '--video-output-path',
+		type=str,
+                default='./output.avi'
+		help='The path of the output video file')
 
 	parser.add_argument('-l', '--labels',
 		type=str,
@@ -136,9 +90,13 @@ if __name__ == '__main__':
 	# Get the output layer names of the model
 	layer_names = net.getLayerNames()
 	layer_names = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+        
+        # If both image and video files are given then raise error
+        if FLAGS.image_path and FLAGS.video_path:
+            raise 'Kidnly provide one, either path to an image or path to video'
 
 	# Do inference with given image
-	if not FLAGS.image_path == None:
+	if FLAGS.image_path:
 		# Read the image
 		try:
 			img = cv.imread(FLAGS.image_path)
@@ -148,33 +106,46 @@ if __name__ == '__main__':
                                Please check the path provided!'
 
                 finally:
-                    # Contructing a blob from the input image
-                    blob = cv.dnn.blobFromImage(img, 1 / 255.0, (416, 416), 
-                                    swapRB=True, crop=False)
+                        img = infer_image(img)
+                        show_img(img)
 
-                    # Perform a forward pass of the YOLO object detector
-                    net.setInput(blob)
+	else if FLAGS.video_path:
+		# Read the video
+		try:
+			vid = cv.VideoCapture(FLAGS.video_path)
+                        height, width = None, None
+                        writer = None
+		except:
+			raise 'Video cannot be loaded!\n\
+                               Please check the path provided!'
 
-                    # Getting the outputs from the output layers
-                    start = time.time()
-                    outs = net.forward(layer_names)
-                    end = time.time()
+                finally:
+                    while True:
+                        grabbed, frame = vid.read()
 
-                    if FLAGS.show_time:
-                        print ("[INFO] YOLOv3 took {:6f} seconds".format(end - start))
+                        # Checking if the complete video is read
+                        if not grabbed:
+                            break
 
-                    
-                    # Generate the boxes, confidences, and classIDs
-                    boxes, confidences, classids = generate_boxes_confidences_classids(outs, height, width)
-                    
-                    # Apply Non-Maxima Suppression to suppress overlapping bounding boxes
-                    idxs = cv.dnn.NMSBoxes(boxes, confidence, FLAGS.confidence, FLAGS.threshold)
+                        if W is None, or H is None:
+                            height, width = frame.shape[:2]
 
-                    # Draw labels and boxes on the image
-                    img = draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors)
+                        frame = infer_img(frame)
 
-                    # show the image
-                    show_image(img)
+                        if writer is None:
+                            # Initialize the video writer
+                            fourcc = cv.VideoWriter_fourcc("MJPG")
+                            writer = cv.VideoWriter(FLAGS.video_output_path, fourcc, 30, 
+                                            (frame.shape[1], frame.shape[0]), True)
 
-	else:
-		pass
+
+                        writer.write(frame)
+
+                print ("[INFO] Cleaning up...")
+                writer.release()
+                vid.release()
+
+
+            else:
+                # Infer real-time on webcam
+                pass
