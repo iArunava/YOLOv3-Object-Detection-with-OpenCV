@@ -35,18 +35,19 @@ def generate_boxes_confidences_classids(outs, height, width, tconf):
 
     for out in outs:
         for detection in out:
-            print (detection)
+            #print (detection)
+            #a = input('GO!')
             
             # Get the scores, classid, and the confidence of the prediction
-            scores = detection[:5]
+            scores = detection[5:]
             classid = np.argmax(scores)
             confidence = scores[classid]
             
             # Consider only the predictions that are above a certain confidence level
             if confidence > tconf:
                 # TODO Check detection
-                box = detection[0:4] * np.array([height, width, height, width])
-                (centerX, centerY, bwidth, bheight) = box.astype('int')
+                box = detection[0:4] * np.array([width, height, width, height])
+                centerX, centerY, bwidth, bheight = box.astype('int')
 
                 # Using the center x, y coordinates to derive the top
                 # and the left corner of the bounding box
@@ -54,7 +55,7 @@ def generate_boxes_confidences_classids(outs, height, width, tconf):
                 y = int(centerY - (bheight / 2))
 
                 # Append to list
-                boxes.append([x, y, int(width), int(height)])
+                boxes.append([x, y, int(bwidth), int(bheight)])
                 confidences.append(float(confidence))
                 classids.append(classid)
 
