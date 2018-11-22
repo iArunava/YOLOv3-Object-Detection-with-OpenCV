@@ -47,10 +47,12 @@ yolov3.py --help
 ## Inference on Video
 
 [![yolov3-video](https://user-images.githubusercontent.com/26242097/48851021-0785f480-edd0-11e8-8ce4-cdfb78e8a849.png)](https://www.youtube.com/watch?v=AzmCYs5fAn0)
+<small> Click on the image to Play the video on YouTube </small>
 
 ## Inference in Real-time
 
 [![yolov3-video](https://user-images.githubusercontent.com/26242097/48862668-0ca56c80-eded-11e8-9482-31d795105983.png)](https://youtu.be/QaxEtpRwmtI)
+<small> Click on the image to Play the video on YouTube </small>
 
 ## References
 
