@@ -18,22 +18,22 @@ cd YOLOv3-Object-Detection-with-OpenCV
 
 3) To infer on an image that is stored on your local machine
 ```
-python3 yolov3.py --image-path='/path/to/image/'
+python3 yolo.py --image-path='/path/to/image/'
 ```
 4) To infer on a video that is stored on your local machine
 ```
-python3 yolov3.py --video-path='/path/to/video/'
+python3 yolo.py --video-path='/path/to/video/'
 ```
 5) To infer real-time on webcam
 ```
-python3 yolov3.py
+python3 yolo.py
 ```
 
 Note: This works considering you have the `weights` and `config` files at the yolov3-coco directory.
 <br/>
 If the files are located somewhere else then mention the path while calling the `yolov3.py`. For more details
 ```
-yolov3.py --help
+yolo.py --help
 ```
 
 ## Inference on images
