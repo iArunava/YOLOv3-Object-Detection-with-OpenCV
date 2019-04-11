@@ -107,7 +107,7 @@ if __name__ == '__main__':
                                Please check the path provided!'
 
 		finally:
-			img = infer_image(net, layer_names, height, width, img, colors, labels, FLAGS)
+			img, _, _, _, _ = infer_image(net, layer_names, height, width, img, colors, labels, FLAGS)
 			show_image(img)
 
 	elif FLAGS.video_path:
