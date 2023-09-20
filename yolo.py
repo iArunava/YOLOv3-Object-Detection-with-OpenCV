@@ -89,7 +89,10 @@ if __name__ == '__main__':
 
 	# Get the output layer names of the model
 	layer_names = net.getLayerNames()
-	layer_names = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+	if cv2.__version__ == '4.6.0':
+            layer_names = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+        else:
+            layer_names = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
         
 	# If both image and video files are given then raise error
 	if FLAGS.image_path is None and FLAGS.video_path is None:
