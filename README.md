@@ -1,7 +1,7 @@
 # YOLOv3-Object-Detection-with-OpenCV
 
-This project implements an image and video object detection classifier using pretrained yolov3 models. 
-The yolov3 models are taken from the official yolov3 paper which was released in 2018. The yolov3 implementation is from [darknet](https://github.com/pjreddie/darknet). Also, this project implements an option to perform classification real-time using the webcam.
+This project implements an image and video object detection classifier using pre-trained YOLOv3 models.
+The YOLOv3 models are taken from the official YOLOv3 paper released in 2018. The YOLOv3 implementation is from [darknet](https://github.com/pjreddie/darknet). Also, this project implements an option to perform classification in real time using the webcam.
 
 ## How to use?
 
@@ -24,14 +24,14 @@ python3 yolo.py --image-path='/path/to/image/'
 ```
 python3 yolo.py --video-path='/path/to/video/'
 ```
-5) To infer real-time on webcam
+5) To infer real-time on wea webcam
 ```
 python3 yolo.py
 ```
 
-Note: This works considering you have the `weights` and `config` files at the yolov3-coco directory.
+Note: This works considering you have the `weights` and `config` files in the yolov3-coco directory.
 <br/>
-If the files are located somewhere else then mention the path while calling the `yolov3.py`. For more details
+If the files are located somewhere else, then mention the path while calling the `yolov3.py`. For more details
 ```
 yolo.py --help
 ```
