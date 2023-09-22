@@ -24,7 +24,7 @@ python3 yolo.py --image-path='/path/to/image/'
 ```
 python3 yolo.py --video-path='/path/to/video/'
 ```
-5) To infer real-time on wea webcam
+5) To infer real-time on a webcam
 ```
 python3 yolo.py
 ```
